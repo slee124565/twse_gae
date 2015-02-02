@@ -15,7 +15,7 @@ from twse_gae.models import TWSEStockModel
 from twse_gae.models_otc import OTCStockModel
 
 
-CONFIG_STOCK_LIST = ['0050','2330','3293']
+CONFIG_STOCK_LIST = ['0050','2330','3293','6282']
 
 
 class StockModel(db.Model):
