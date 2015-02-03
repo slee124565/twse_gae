@@ -243,12 +243,14 @@ class TWSEStockModel(db.Model):
         t_stock = cls.get_stock(p_stk_no)
 
         t_dict_ym_list = sorted(t_stock.csv_dict.keys())
+        t_dict_ym_list = t_dict_ym_list[:-1]
         t_check_date = date(t_yearmonth_since.year,t_yearmonth_since.month,1) + relativedelta(months=1)
         if t_init_ym in t_dict_ym_list:
             #-> update stock
             t_last_ym = t_init_ym
             while t_check_date.strftime('%Y%m') in t_dict_ym_list:
                 t_last_ym = t_check_date.strftime('%Y%m')
+                #logging.debug('{}: last_ym {}'.format(func,t_last_ym))
                 t_check_date += relativedelta(months=1)
             logging.debug('{}: stock {} update from last modified month {}'.format(func,p_stk_no,t_last_ym))
         else:
