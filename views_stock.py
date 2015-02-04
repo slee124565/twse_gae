@@ -28,3 +28,11 @@ def menu_update(request,p_stk_no):
     add_stk_update_task(p_stk_no)
     return HttpResponse('Chain Update Task Added for Stock {}'.format(p_stk_no))
 
+def stk_info_view(request):
+    t_model = StockModel.get_model()
+    t_content = ''
+    for t_id in t_model.csv_dict:
+        t_abbr_name = t_model.csv_dict[t_id][StockModel.CSV_COL_ABBRE_NAME]
+        t_category = t_model.csv_dict[t_id][StockModel.CSV_COL_MARKET]
+        t_content += t_id + ',' + t_abbr_name + ',' + t_category + '<br/>\n'
+    return HttpResponse(t_content)

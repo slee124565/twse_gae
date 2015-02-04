@@ -75,9 +75,9 @@ def reload_stk_task_handler(request):
 
     #-> delete db entity if exist
     t_stk_type = StockModel.get_type_by_stk_no(t_stk_no)
-    if t_stk_type == StockModel.STOCK_TYPE_TWSE:
+    if t_stk_type == StockModel.MARKET_TYPE_TWSE:
         t_entity = TWSEStockModel.get_by_key_name(TWSEStockModel.compose_key_name(t_stk_no))
-    elif t_stk_type == StockModel.STOCK_TYPE_OTC:
+    elif t_stk_type == StockModel.MARKET_TYPE_OTC:
         t_entity = OTCStockModel.get_by_key_name(TWSEStockModel.compose_key_name(t_stk_no))
     else:
         response.content = 'stk_no {} ERROR'.format(t_stk_no)
@@ -110,9 +110,9 @@ def update_stk_taskhandler(request):
 
     logging.info('{}: with stock {}'.format(fname,t_stk_no))
     t_stk_type = StockModel.get_type_by_stk_no(t_stk_no)
-    if t_stk_type == StockModel.STOCK_TYPE_TWSE:
+    if t_stk_type == StockModel.MARKET_TYPE_TWSE:
         t_last_ym = TWSEStockModel.get_stk_update_ym(t_stk_no)
-    elif t_stk_type == StockModel.STOCK_TYPE_OTC:
+    elif t_stk_type == StockModel.MARKET_TYPE_OTC:
         t_last_ym = OTCStockModel.get_stk_update_ym(t_stk_no)
     else:
         response.content = 'stk_no {} ERROR'.format(t_stk_no)
@@ -158,9 +158,9 @@ def cupdate_stk_taskhandler(request):
             response.content = t_msg
             return response
         
-        if t_stk_type == StockModel.STOCK_TYPE_TWSE:
+        if t_stk_type == StockModel.MARKET_TYPE_TWSE:
             t_update_result = TWSEStockModel.update_monthly_csv_from_web(t_stk_no,t_year_month,True)
-        else: #->StockModel.STOCK_TYPE_OTC
+        else: #->StockModel.MARKET_TYPE_OTC
             t_update_result = OTCStockModel.update_monthly_csv_from_web(t_stk_no,t_year_month,True)
         
         if t_update_result is None:
@@ -199,11 +199,11 @@ def cupdate_stk_taskhandler(request):
 
 
 #-> task for StockModel
-def update_model(request):
+def add_update_task(request):
     '''
     designed for GAE cron schedule activated
     '''
-    fname = '{} {}'.format(__name__,'update_model')
+    fname = '{} {}'.format(__name__,'add_update_task')
     response = HttpResponse(fname)
 
     taskqueue.add(method = 'GET', 
@@ -220,32 +220,10 @@ def update_model_taskhandler(request):
     fname = '{} {}'.format(__name__,'update_model_taskhandler')
     response = HttpResponse(fname)
     
-    if 'type' in request.REQUEST.keys():
-        t_type = request.REQUEST['type']
-    else:
-        t_type = StockModel.STOCK_TYPE_TWSE
-
-    logging.info('{} with type {}'.format(fname,t_type))
-    
-    if not t_type in [StockModel.STOCK_TYPE_TWSE,StockModel.STOCK_TYPE_OTC]:
-        logging.warning('{}: param type error')
-        response.status_code = httplib.OK
-        return response
-    
-    
-    if (StockModel.update_from_web(t_type)):
+    if (StockModel.update_from_web()):
         logging.info('{}: success'.format(fname))
         response.status_code = httplib.OK
         
-        if t_type == StockModel.STOCK_TYPE_TWSE:
-            taskqueue.add(method = 'GET', 
-                  url = os.path.dirname(os.path.dirname(request.get_full_path())) + "/id_update/",
-                  countdown = date.today().day % 5,
-                  params = {
-                            'type': StockModel.STOCK_TYPE_OTC,
-                            })
-        else:
-            logging.info('{}: end of chain update.'.format(fname))
     else:
         logging.warning('{}: failed'.format(fname))
         response.status_code = httplib.INTERNAL_SERVER_ERROR

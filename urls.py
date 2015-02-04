@@ -4,7 +4,7 @@ urlpatterns = patterns('',
 
      #-> For GAE CRON task
      url(r'^task/stk_cron_update/$', 'twse_gae.tasks_stock.cron_stk_update_taskhandler'),
-     url(r'^task/id_cron_update/$', 'twse_gae.tasks_stock.update_model'),
+     url(r'^task/id_cron_update/$', 'twse_gae.tasks_stock.add_update_task'),
 
      #-> GAE Task Handler
      url(r'^task/stk_cupdate/$', 'twse_gae.tasks_stock.cupdate_stk_taskhandler'),
@@ -14,8 +14,9 @@ urlpatterns = patterns('',
           
      #-> STOCK
      url(r'^stock/func/update/$', 'twse_gae.tests_stock.test_stock_update_from_web'),
-     url(r'^stock/func/update/(?P<p_type>\w+)/$', 'twse_gae.tests_stock.test_stock_update_from_web'),
+     url(r'^stock/info/$', 'twse_gae.views_stock.stk_info_view'),
      url(r'^stock/func/code_list/$', 'twse_gae.views_stock.code_list_view'),
+     url(r'^stock/func/stk_type/(?P<p_stk_no>\w+)/$', 'twse_gae.tests_stock.test_get_type_by_stk_no'),
 
      #-> TWSE
      url(r'^twse/func/test5/$', 'twse_gae.tests.test_get_index_by_date'),

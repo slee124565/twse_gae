@@ -173,6 +173,7 @@ class TWSEStockModel(db.Model):
             web_fetch = urlfetch.fetch(t_url)
             if web_fetch.status_code == httplib.OK:
                 web_content = web_fetch.content
+                #logging.debug('{}: web_content {}'.format(func,web_content))
                 t_monthly_dict = cls.parse_csv_content_dict(web_content)
                 if len(t_monthly_dict) == 0:
                     return None
@@ -182,7 +183,7 @@ class TWSEStockModel(db.Model):
                 logging.warning('{}: urlfetch fail status code {}'.format(func,web_fetch.status_code))
                 return None
         except urlfetch.DownloadError, err:
-            logging.warning('{} : Internet Download Error: {}'.format(func, str(err)))
+            logging.warning('{} : Internet Download Error: {}'.format(func, err))
             return None
         '''
         except Exception, e:

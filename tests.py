@@ -19,7 +19,7 @@ def test_get_stk_update_ym(request, p_stk_no):
 def test_update_month(request,p_stk_no,p_year_month):
     t_stock = TWSEStockModel.update_monthly_csv_from_web(p_stk_no,p_year_month,True)
     if t_stock is None:
-        return HttpResponse('TWSEStockModel.update_monthly_csv_from_web({},{}) faile'.format(p_stk_no,p_year_month))
+        return HttpResponse('TWSEStockModel.update_monthly_csv_from_web({},{}) fail'.format(p_stk_no,p_year_month))
     else:
         return HttpResponse(get_stk_content(t_stock))
 
