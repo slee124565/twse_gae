@@ -2,6 +2,9 @@ from google.appengine.ext import db
 from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 
+from lxml.html import document_fromstring
+from lxml import etree
+
 from datetime import date
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
@@ -25,7 +28,8 @@ def get_stk_reload_handler_url():
 
 class TWSEStockModel(db.Model):
     
-    URL_TEMPLATE = 'http://www.twse.com.tw/ch/trading/exchange/STOCK_DAY/STOCK_DAY_print.php?genpage=genpage/Report{Ym}/{Ym}_F3_1_8_{stk_no}.php&type=csv'
+    #URL_TEMPLATE = 'http://www.twse.com.tw/ch/trading/exchange/STOCK_DAY/STOCK_DAY_print.php?genpage=genpage/Report{Ym}/{Ym}_F3_1_8_{stk_no}.php&type=csv'
+    URL_TEMPLATE = 'http://www.twse.com.tw/ch/trading/exchange/STOCK_DAY/genpage/Report{Ym}/{Ym}_F3_1_8_{stk_no}.php?STK_NO={stk_no}&myear={Y}&mmon={m}'
     CSV_COL_DATE = 'date'
     CSV_COL_SHARE = 'share'
     CSV_COL_AMOUNT = 'amount'
@@ -38,9 +42,9 @@ class TWSEStockModel(db.Model):
     CSV_COLS = [CSV_COL_DATE,
                CSV_COL_SHARE,
                CSV_COL_AMOUNT,
+               CSV_COL_OPEN,
                CSV_COL_HIGH,
                CSV_COL_LOW,
-               CSV_COL_OPEN,
                CSV_COL_CLOSE,
                CSV_COL_DIFF,
                CSV_COL_DEAL]
@@ -131,11 +135,11 @@ class TWSEStockModel(db.Model):
         t_arr = p_col_date.split('/')
         return date(1911+int(t_arr[0]),int(t_arr[1]),int(t_arr[2]))
         
+    '''
+    #-> deprecated caused by website design changed
     @classmethod
     def parse_csv_content_dict(cls, p_csv_content):
-        '''
-        csv row data start from line 3 :: OFFSET = 2
-        '''
+        #csv row data start from line 3 :: OFFSET = 2
         func = '{} {}'.format(__name__,'parse_csv_content_dict')
         ROW_OFFSET = 2
         rows = p_csv_content.splitlines()
@@ -152,11 +156,46 @@ class TWSEStockModel(db.Model):
             
         logging.debug('{}:{}'.format(func,str(data_dict)))
         return data_dict
+    '''
+
+    @classmethod
+    def parse_csv_content_dict(cls, p_web_content):
+        func = '{} {}'.format(__name__,'parse_csv_content_dict')
+        xpath = '//*[@id="contentblock"]/td/table[3]'
+        web_content = document_fromstring(p_web_content)
+        t_tables = web_content.xpath(xpath)
+        
+        t_content = ','.join(cls.CSV_COLS) + '\n'
+        t_tr_count = 0
+        for t_element in t_tables[0]:
+            t_line = ''
+            if t_element.tag == 'table':
+                break
+            if t_element.tag == 'tr' and len(t_element) == 9:
+                if t_tr_count > 0:
+                    for t_col in t_element:
+                        if len(t_col) == 0:
+                            t_line += t_col.text.replace(',','') + ','
+                        else:
+                            t_line += t_col[0].text + ','
+                    t_content += t_line[:-1] + '\n'
+                t_tr_count += 1
+
+        csv_reader = csv.DictReader(StringIO.StringIO(t_content))
+        data_dict = {}
+        for row in csv_reader:
+            t_item = dict(row)
+            t_item_date = cls.parse_csv_col_date(t_item[cls.CSV_COL_DATE])
+            t_item[cls.CSV_COL_DATE] = t_item_date
+            data_dict[str(t_item_date)] = t_item
+            
+        logging.debug('{}:{}'.format(func,str(data_dict)))
+        return data_dict
 
     @classmethod
     def get_fetch_url(cls, p_stk_no, p_year_month):
         fname = '{} {}'.format(__name__,'get_fetch_url')
-        t_fetch_url = cls.URL_TEMPLATE.format(Ym=p_year_month,stk_no=p_stk_no)
+        t_fetch_url = cls.URL_TEMPLATE.format(Ym=p_year_month,stk_no=p_stk_no,Y=p_year_month[:4],m=p_year_month[4:])
         logging.debug('{}: {}'.format(fname,t_fetch_url))
         return t_fetch_url
         
