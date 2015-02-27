@@ -16,5 +16,8 @@ def update_tw50_view(request):
     
 def tw50_list_view(request):
     t_list = TW50Model.get_id_list()
+    if len(t_list) == 0:
+        TW50Model.update_from_web()
+        t_list = TW50Model.get_id_list()
     return HttpResponse(str(t_list))
     
