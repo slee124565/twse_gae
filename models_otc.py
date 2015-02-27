@@ -1,11 +1,10 @@
-from google.appengine.api import urlfetch
 
 from models import TWSEStockModel
 
 from datetime import date
 
 import csv,StringIO
-import logging, httplib
+import logging
 
 class OTCStockModel(TWSEStockModel):
     URL_TEMPLATE = 'http://www.otc.org.tw/web/stock/aftertrading/daily_trading_info/st43_download.php?l=zh-tw&d={yyym}&stkno={stk_no}&s=0,asc,0'
