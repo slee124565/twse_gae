@@ -243,6 +243,17 @@ class TWSEStockModel(db.Model):
                                     })
         
     @classmethod
+    def check_db_exist(cls, p_stk_no):
+        func = '{} {}'.format(__name__,'check_db_exist')
+        t_stock = cls.get_by_key_name(cls.compose_key_name(p_stk_no))
+        if t_stock is None or t_stock.csv_dict_pickle in [None,'']:
+            logging.info('{}: stock {} not exist in db'.format(func,p_stk_no))
+            return False
+        else:
+            logging.info('{}: stock {} exist in db'.format(func,p_stk_no))
+            return True
+    
+    @classmethod
     def get_stock(cls, p_stk_no):
         func = '{} {}'.format(__name__,'get_stock')
         

@@ -3,7 +3,7 @@ from google.appengine.api import taskqueue
 from django.http import HttpResponse
 import httplib
 
-from datetime import date
+from datetime import date, datetime
 from dateutil import parser
 from dateutil.relativedelta import relativedelta
 
@@ -11,6 +11,7 @@ import twse_gae
 from twse_gae.models_stock import StockModel
 from twse_gae.models_otc import OTCStockModel
 from twse_gae.models import TWSEStockModel
+from twse_gae.models_tw50 import TW50Model
 
 import logging, os
 
@@ -37,7 +38,7 @@ def add_stk_update_task(p_stk_no):
     logging.info('{}: with stock {}'.format(fname,p_stk_no))
     taskqueue.add(method = 'GET', 
                       url = "/twse/task/stk_update/" ,
-                      countdown = date.today().day % 5,
+                      countdown = datetime.now().second % 5,
                       params = {
                                 'stk_no': p_stk_no,
                                 })
@@ -49,16 +50,25 @@ def cron_stk_update_taskhandler(request):
     
     fname = '{} {}'.format(__name__,'cron_stk_update_taskhandler')
     response = HttpResponse(fname)
-    t_stk_list = twse_gae.models_stock.CONFIG_STOCK_LIST
+    t_stk_list = twse_gae.models_stock.CONFIG_STOCK_LIST + TW50Model.get_id_list()
     logging.info('{}: CONFIG_STOCK_LIST {}'.format(fname,t_stk_list))
     
     for t_stk_no in t_stk_list:
-        taskqueue.add(method = 'GET', 
+        if StockModel.check_db_exist(t_stk_no):
+            taskqueue.add(method = 'GET', 
                           url = os.path.dirname(os.path.dirname(request.get_full_path())) + "/stk_update/" ,
-                          countdown = date.today().day % 5,
+                          countdown = datetime.now().second % 5,
                           params = {
                                     'stk_no': t_stk_no,
                                     })
+        else: #-> first update, use reload instead of update
+            taskqueue.add(method = 'GET', 
+                          url = os.path.dirname(os.path.dirname(request.get_full_path())) + "/stk_reload/" ,
+                          countdown = datetime.now().second % 5,
+                          params = {
+                                    'stk_no': t_stk_no,
+                                    })
+            
 
     response.status_code = httplib.OK
     return response
@@ -91,7 +101,7 @@ def reload_stk_task_handler(request):
     #-> start chain task
     taskqueue.add(method = 'GET', 
                       url = os.path.dirname(os.path.dirname(request.get_full_path())) + "/stk_update/" ,
-                      countdown = date.today().day % 5,
+                      countdown = datetime.now().second % 5,
                       params = {
                                 'stk_no': t_stk_no,
                                 })
@@ -126,7 +136,7 @@ def update_stk_taskhandler(request):
     else:
         taskqueue.add(method = 'GET', 
                       url = os.path.dirname(os.path.dirname(request.get_full_path())) + "/stk_cupdate/" ,
-                      countdown = date.today().day % 5,
+                      countdown = datetime.now().second % 5,
                       params = {
                                 'stk_no': t_stk_no,
                                 'year_month': t_last_ym,
@@ -208,7 +218,7 @@ def add_update_task(request):
 
     taskqueue.add(method = 'GET', 
           url = os.path.dirname(os.path.dirname(request.get_full_path())) + "/id_update/",
-          countdown = date.today().day % 5)
+          countdown = datetime.now().second % 5)
     
     response.status_code = httplib.OK 
     return response

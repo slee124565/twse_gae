@@ -17,6 +17,7 @@ urlpatterns = patterns('',
      url(r'^stock/info/$', 'twse_gae.views_stock.stk_info_view'),
      url(r'^stock/func/code_list/$', 'twse_gae.views_stock.code_list_view'),
      url(r'^stock/func/stk_type/(?P<p_stk_no>\w+)/$', 'twse_gae.tests_stock.test_get_type_by_stk_no'),
+     url(r'^stock/func/check_db/(?P<p_stk_no>\w+)/$', 'twse_gae.tests_stock.test_check_db_exist'),
 
      #-> TWSE
      url(r'^twse/func/test5/$', 'twse_gae.tests.test_get_index_by_date'),

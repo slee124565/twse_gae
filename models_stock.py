@@ -72,25 +72,36 @@ class StockModel(db.Model):
     def get_stock_type(self, p_stk_no):
         fname = '{} {}'.format(__name__,'get_stock_type')
         
-        t_type = None
-        if p_stk_no in self.csv_dict:
-            t_stk_info = self.csv_dict[p_stk_no]
-            t_type_text = t_stk_info[StockModel.CSV_COL_MARKET]
-            if t_type_text == StockModel.CONST_MARKET_TYPE[StockModel.MARKET_TYPE_TWSE]:
-                t_type = StockModel.MARKET_TYPE_TWSE
-            elif t_type_text == StockModel.CONST_MARKET_TYPE[StockModel.MARKET_TYPE_OTC]:
-                t_type = StockModel.MARKET_TYPE_OTC
-            elif t_type_text == StockModel.CONST_MARKET_TYPE[StockModel.MARKET_TYPE_PUBLIC]:
-                t_type = StockModel.MARKET_TYPE_PUBLIC
-            elif t_type_text == StockModel.CONST_MARKET_TYPE[StockModel.MARKET_TYPE_EMERGING]:
-                t_type = StockModel.MARKET_TYPE_EMERGING
-        else:
-            logging.info('{}: stock {} type unkonw, set to MARKET_TYPE_TWSE'.format(fname,p_stk_no))
+        if p_stk_no in ['0050','0051']:
             t_type = StockModel.MARKET_TYPE_TWSE
-                
+        else:
+            t_type = None
+            if p_stk_no in self.csv_dict:
+                t_stk_info = self.csv_dict[p_stk_no]
+                t_type_text = t_stk_info[StockModel.CSV_COL_MARKET]
+                if t_type_text == StockModel.CONST_MARKET_TYPE[StockModel.MARKET_TYPE_TWSE]:
+                    t_type = StockModel.MARKET_TYPE_TWSE
+                elif t_type_text == StockModel.CONST_MARKET_TYPE[StockModel.MARKET_TYPE_OTC]:
+                    t_type = StockModel.MARKET_TYPE_OTC
+                elif t_type_text == StockModel.CONST_MARKET_TYPE[StockModel.MARKET_TYPE_PUBLIC]:
+                    t_type = StockModel.MARKET_TYPE_PUBLIC
+                elif t_type_text == StockModel.CONST_MARKET_TYPE[StockModel.MARKET_TYPE_EMERGING]:
+                    t_type = StockModel.MARKET_TYPE_EMERGING
+
         logging.debug('{}: stock {} type is {}'.format(fname,p_stk_no,t_type))
         return t_type
 
+    @classmethod
+    def check_db_exist(cls, p_stk_no):
+        fname = '{} {}'.format(__name__,'check_db_exist')
+        t_stk_type = cls.get_type_by_stk_no(p_stk_no)
+        if t_stk_type == cls.MARKET_TYPE_TWSE:
+            return TWSEStockModel.check_db_exist(p_stk_no)
+        elif t_stk_type == cls.MARKET_TYPE_OTC:
+            return OTCStockModel.check_db_exist(p_stk_no)
+        else:
+            raise Exception('check_db_exist with stk_no ERROR')
+        
     @classmethod
     def get_name_by_stk_no(cls, p_stk_no):
         t_model = cls.get_model()

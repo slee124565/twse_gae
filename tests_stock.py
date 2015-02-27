@@ -15,3 +15,7 @@ def test_stock_update_from_web(request):
 
 def test_get_type_by_stk_no(request,p_stk_no):
     return HttpResponse(p_stk_no + ': ' + StockModel.get_type_by_stk_no(p_stk_no))
+
+
+def test_check_db_exist(request, p_stk_no):
+    return HttpResponse(p_stk_no + ': ' + str(StockModel.check_db_exist(p_stk_no)))
