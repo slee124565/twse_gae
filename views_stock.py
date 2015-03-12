@@ -1,9 +1,14 @@
 from django.http import HttpResponse
 from models_stock import StockModel
 from tasks_stock import add_stk_update_task
+from datetime import date
 
 import codecs
 
+def get_current_price(request, p_stk_no):
+    t_stock = StockModel.get_stock(p_stk_no)
+    return HttpResponse(t_stock.get_index_by_date(date.today()))
+    
 def code_list_view(request):
     t_model = StockModel.get_model()
     t_content = ''
