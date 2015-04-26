@@ -9,6 +9,7 @@ from dateutil.relativedelta import relativedelta
 
 from twse_gae.models import TWSEStockModel
 import twse_gae.models as twse
+import twse_gae.models_stock as twse_stk
 
 import logging, os
 
@@ -30,10 +31,10 @@ def list_update_taskhandler(request):
     
     func = '{} {}'.format(__name__,'update_taskhandler')
     response = HttpResponse(func)
-    logging.info('{}: CONFIG_STOCK_LIST {}'.format(func,twse.CONFIG_STOCK_LIST))
+    logging.info('{}: CONFIG_STOCK_LIST {}'.format(func,twse_stk.CONFIG_STOCK_LIST))
     
     t_count = 2
-    for t_stk_no in twse.CONFIG_STOCK_LIST:
+    for t_stk_no in twse_stk.CONFIG_STOCK_LIST:
         taskqueue.add(method = 'GET', 
                           url = twse.get_stk_update_handler_url() ,
                           countdown = t_count,
