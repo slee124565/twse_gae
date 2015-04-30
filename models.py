@@ -72,7 +72,12 @@ class TWSEStockModel(db.Model):
             else:
                 return self.get_index_by_date(p_date + relativedelta(days=-1))
         else:
-            return 0.0
+            t_date = p_date + relativedelta(months=-1)
+            t_ym = t_date.strftime('%Y%m')
+            if t_ym in self.csv_dict.keys():
+                return self.get_index_by_date(p_date + relativedelta(days=-1))
+            else:
+                return 0.0
             
     def get_sample_index_list(self, p_date_list):
         func = '{} {}'.format(__name__,'get_sample_index_list')
