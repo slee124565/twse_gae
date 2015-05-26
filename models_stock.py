@@ -17,7 +17,7 @@ from twse_gae.models import TWSEStockModel
 from twse_gae.models_otc import OTCStockModel
 
 
-CONFIG_STOCK_LIST = ['0050','2330','3293','6282','2353','2357']
+CONFIG_STOCK_LIST = ['0050','0051','0056']
 
 
 class StockModel(db.Model):
@@ -72,7 +72,7 @@ class StockModel(db.Model):
     def get_stock_type(self, p_stk_no):
         fname = '{} {}'.format(__name__,'get_stock_type')
         
-        if p_stk_no in ['0050','0051']:
+        if p_stk_no in ['0050','0051','0056']:
             t_type = StockModel.MARKET_TYPE_TWSE
         else:
             t_type = None
