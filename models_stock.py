@@ -72,7 +72,7 @@ class StockModel(db.Model):
     def get_stock_type(self, p_stk_no):
         fname = '{} {}'.format(__name__,'get_stock_type')
         
-        if p_stk_no in ['0050','0051','0056']:
+        if p_stk_no in ['0050','0051','0056','0061']:
             t_type = StockModel.MARKET_TYPE_TWSE
         else:
             t_type = None
